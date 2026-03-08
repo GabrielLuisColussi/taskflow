@@ -1,16 +1,18 @@
-# node
+# node (root)
 node_modules/
 dist/
 .vite/
+
+# env
 .env
 .env.*
 
-# react
+# frontend
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
 
-# php
+# backend
 backend/vendor/
 backend/.env
 backend/.env.*
@@ -23,6 +25,3 @@ Thumbs.db
 
 # logs
 *.log
-# php extra
-*.cache
-*.tmp
