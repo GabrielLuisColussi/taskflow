@@ -25,3 +25,12 @@ Thumbs.db
 
 # logs
 *.log
+
+# env
+.env
+.env.*
+
+# allow env examples
+!.env.example
+!backend/.env.example
+!frontend/.env.example
