@@ -1,0 +1,25 @@
+# node
+node_modules/
+dist/
+.vite/
+.env
+.env.*
+
+# react
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# php
+backend/vendor/
+backend/.env
+backend/.env.*
+
+# editor/os
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
