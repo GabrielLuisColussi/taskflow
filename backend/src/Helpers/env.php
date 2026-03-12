@@ -1,48 +1,36 @@
 <?php
 
-declare(strict_types=1);
-
-function loadEnv(string $filePath): void
+function loadEnv(string $path): void
 {
-    if (!file_exists($filePath)) {
-        return;
+    if (!file_exists($path)) {
+        throw new RuntimeException(".env não encontrado em: {$path}");
     }
 
-    $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    if ($lines === false) {
-        return;
-    }
+    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
     foreach ($lines as $line) {
         $line = trim($line);
+
         if ($line === '' || str_starts_with($line, '#')) {
             continue;
         }
 
-        $parts = explode('=', $line, 2);
-        if (count($parts) !== 2) {
+        if (!str_contains($line, '=')) {
             continue;
         }
 
-        $key = trim($parts[0]);
-        $value = trim($parts[1]);
+        [$key, $value] = explode('=', $line, 2);
 
-        if ($value !== '' && (($value[0] === '"' && str_ends_with($value, '"')) || ($value[0] === "'" && str_ends_with($value, "'")))) {
-            $value = substr($value, 1, -1);
-        }
+        $key = trim($key);
+        $value = trim($value);
+        $value = trim($value, "\"'");
 
         $_ENV[$key] = $value;
-        putenv($key . '=' . $value);
+        putenv("{$key}={$value}");
     }
 }
 
 function env(string $key, ?string $default = null): ?string
 {
-    $value = $_ENV[$key] ?? getenv($key);
-
-    if ($value === false || $value === null || $value === '') {
-        return $default;
-    }
-
-    return (string) $value;
+    return $_ENV[$key] ?? getenv($key) ?: $default;
 }

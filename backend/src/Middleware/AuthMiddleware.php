@@ -1,45 +1,24 @@
 <?php
 
-declare(strict_types=1);
-
 class AuthMiddleware
 {
-    public function __construct(private readonly JwtService $jwtService)
+    public static function requireAuth(): array
     {
-    }
+        $headers = getallheaders();
+        $auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 
-    public function authenticate(): int
-    {
-        $token = $this->extractBearerToken();
-        if ($token === null) {
-            Response::error('Token ausente.', 401);
+        if (!$auth || !str_starts_with($auth, 'Bearer ')) {
+            Response::error('Não autorizado', 401);
         }
 
-        $payload = $this->jwtService->decodeToken($token);
-        if ($payload === null || !isset($payload['sub'])) {
-            Response::error('Token invalido ou expirado.', 401);
+        $token = trim(str_replace('Bearer', '', $auth));
+
+        try {
+            return JwtService::verify($token);
+        } catch (Throwable $e) {
+            Response::error('Token inválido', 401, [
+                'details' => env('APP_DEBUG') === 'true' ? $e->getMessage() : null
+            ]);
         }
-
-        return (int) $payload['sub'];
-    }
-
-    private function extractBearerToken(): ?string
-    {
-        $header = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
-
-        if ($header === null && function_exists('getallheaders')) {
-            $headers = getallheaders();
-            if (isset($headers['Authorization'])) {
-                $header = $headers['Authorization'];
-            } elseif (isset($headers['authorization'])) {
-                $header = $headers['authorization'];
-            }
-        }
-
-        if ($header === null || !str_starts_with($header, 'Bearer ')) {
-            return null;
-        }
-
-        return trim(substr($header, 7));
     }
 }

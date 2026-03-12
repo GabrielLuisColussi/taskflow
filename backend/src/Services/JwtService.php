@@ -1,82 +1,68 @@
 <?php
 
-declare(strict_types=1);
-
 class JwtService
 {
-    public function __construct(
-        private readonly string $secret,
-        private readonly int $ttlSeconds = 86400
-    ) {
+    private static function base64UrlEncode(string $data): string
+    {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
-    public function createToken(array $claims): string
+    private static function base64UrlDecode(string $data): string
     {
-        $header = [
-            'alg' => 'HS256',
-            'typ' => 'JWT',
-        ];
+        $remainder = strlen($data) % 4;
+        if ($remainder) {
+            $data .= str_repeat('=', 4 - $remainder);
+        }
+        return base64_decode(strtr($data, '-_', '+/'));
+    }
+
+    public static function generate(array $payload, int $expiresInSeconds = 86400): string
+    {
+        $header = ['alg' => 'HS256', 'typ' => 'JWT'];
 
         $now = time();
-        $payload = array_merge($claims, [
+        $payload = array_merge($payload, [
             'iat' => $now,
-            'exp' => $now + $this->ttlSeconds,
+            'exp' => $now + $expiresInSeconds
         ]);
 
-        $headerEncoded = $this->base64UrlEncode(json_encode($header));
-        $payloadEncoded = $this->base64UrlEncode(json_encode($payload));
+        $baseHeader  = self::base64UrlEncode(json_encode($header));
+        $basePayload = self::base64UrlEncode(json_encode($payload));
 
-        $signature = hash_hmac('sha256', $headerEncoded . '.' . $payloadEncoded, $this->secret, true);
-        $signatureEncoded = $this->base64UrlEncode($signature);
+        $secret = env('JWT_SECRET', 'change_me');
+        $signature = hash_hmac('sha256', "{$baseHeader}.{$basePayload}", $secret, true);
+        $baseSignature = self::base64UrlEncode($signature);
 
-        return $headerEncoded . '.' . $payloadEncoded . '.' . $signatureEncoded;
+        return "{$baseHeader}.{$basePayload}.{$baseSignature}";
     }
 
-    public function decodeToken(string $token): ?array
+    public static function verify(string $token): array
     {
         $parts = explode('.', $token);
         if (count($parts) !== 3) {
-            return null;
+            throw new Exception('Token inválido');
         }
 
-        [$headerEncoded, $payloadEncoded, $signatureEncoded] = $parts;
+        [$baseHeader, $basePayload, $baseSignature] = $parts;
 
-        $expectedSignature = hash_hmac('sha256', $headerEncoded . '.' . $payloadEncoded, $this->secret, true);
-        $expectedSignatureEncoded = $this->base64UrlEncode($expectedSignature);
+        $secret = env('JWT_SECRET', 'change_me');
+        $expected = self::base64UrlEncode(
+            hash_hmac('sha256', "{$baseHeader}.{$basePayload}", $secret, true)
+        );
 
-        if (!hash_equals($expectedSignatureEncoded, $signatureEncoded)) {
-            return null;
+        if (!hash_equals($expected, $baseSignature)) {
+            throw new Exception('Assinatura inválida');
         }
 
-        $payloadJson = $this->base64UrlDecode($payloadEncoded);
-        if ($payloadJson === false) {
-            return null;
-        }
-
-        $payload = json_decode($payloadJson, true);
+        $payload = json_decode(self::base64UrlDecode($basePayload), true);
         if (!is_array($payload)) {
-            return null;
+            throw new Exception('Payload inválido');
         }
 
-        if (isset($payload['exp']) && time() >= (int) $payload['exp']) {
-            return null;
+        if (isset($payload['exp']) && time() > (int)$payload['exp']) {
+            throw new Exception('Token expirado');
         }
 
         return $payload;
-    }
-
-    private function base64UrlEncode(string $value): string
-    {
-        return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
-    }
-
-    private function base64UrlDecode(string $value): string|false
-    {
-        $remainder = strlen($value) % 4;
-        if ($remainder !== 0) {
-            $value .= str_repeat('=', 4 - $remainder);
-        }
-
-        return base64_decode(strtr($value, '-_', '+/'), true);
     }
 }

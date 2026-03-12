@@ -1,36 +1,34 @@
 <?php
 
-declare(strict_types=1);
-
 class Response
 {
-    public static function json(array $payload, int $statusCode = 200): never
-    {
+    public static function json(
+        bool $success,
+        string $message,
+        $data = null,
+        int $statusCode = 200,
+        ?array $errors = null
+    ): void {
         http_response_code($statusCode);
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode($payload, JSON_UNESCAPED_UNICODE);
+
+        echo json_encode([
+            'success' => $success,
+            'message' => $message,
+            'data'    => $data,
+            'errors'  => $errors
+        ], JSON_UNESCAPED_UNICODE);
+
         exit;
     }
 
-    public static function success(array $data = [], int $statusCode = 200): never
+    public static function success(string $message, $data = null, int $statusCode = 200): void
     {
-        self::json([
-            'ok' => true,
-            'data' => $data,
-        ], $statusCode);
+        self::json(true, $message, $data, $statusCode);
     }
 
-    public static function error(string $message, int $statusCode = 400, array $errors = []): never
+    public static function error(string $message, int $statusCode = 400, ?array $errors = null): void
     {
-        $payload = [
-            'ok' => false,
-            'message' => $message,
-        ];
-
-        if ($errors !== []) {
-            $payload['errors'] = $errors;
-        }
-
-        self::json($payload, $statusCode);
+        self::json(false, $message, null, $statusCode, $errors);
     }
 }
