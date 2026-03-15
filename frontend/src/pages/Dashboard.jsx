@@ -211,25 +211,37 @@ export default function Dashboard() {
           </div>
 
           <nav className="mt-10 space-y-2">
-            <button className="flex w-full items-center gap-3 rounded-xl bg-zinc-800 px-4 py-3 text-left text-sm font-medium">
+            <a
+              href="#dashboard-top"
+              className="flex w-full items-center gap-3 rounded-xl bg-zinc-800 px-4 py-3 text-left text-sm font-medium"
+            >
               <LayoutDashboard size={18} />
               Dashboard
-            </button>
+            </a>
 
-            <button className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100 transition">
+            <a
+              href="#tasks-section"
+              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100 transition"
+            >
               <CheckSquare size={18} />
               Tarefas
-            </button>
+            </a>
 
-            <button className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100 transition">
+            <a
+              href="#filters-section"
+              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100 transition"
+            >
               <Filter size={18} />
               Filtros
-            </button>
+            </a>
 
-            <button className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100 transition">
+            <a
+              href="#account-section"
+              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100 transition"
+            >
               <User size={18} />
               Conta
-            </button>
+            </a>
           </nav>
 
           <div className="mt-auto rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950 p-4">
@@ -241,7 +253,10 @@ export default function Dashboard() {
         </aside>
 
         <main className="p-6 lg:p-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <section
+            id="dashboard-top"
+            className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+          >
             <div>
               <p className="text-sm uppercase tracking-[0.2em] text-zinc-500">
                 Dashboard
@@ -261,7 +276,7 @@ export default function Dashboard() {
               <LogOut size={16} />
               Sair
             </button>
-          </div>
+          </section>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950 p-5 shadow-sm">
@@ -334,7 +349,10 @@ export default function Dashboard() {
             {msg && <p className="mt-3 text-sm text-zinc-300">{msg}</p>}
           </form>
 
-          <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+          <section
+            id="filters-section"
+            className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
+          >
             <div className="grid gap-3 md:grid-cols-4">
               <input
                 className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none md:col-span-2"
@@ -375,110 +393,130 @@ export default function Dashboard() {
                 Limpar filtros
               </button>
             </div>
-          </div>
+          </section>
 
-          {isLoading ? (
-            <p className="mt-6 text-zinc-400">Carregando...</p>
-          ) : (
-            <div className="mt-6 space-y-3">
-              {tasks.length === 0 && (
-                <div className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-900 p-8 text-center">
-                  <p className="text-zinc-300 font-medium">Nenhuma tarefa encontrada</p>
-                  <p className="mt-2 text-sm text-zinc-500">
-                    Ajuste os filtros ou crie uma nova tarefa.
-                  </p>
-                </div>
-              )}
+          <section id="tasks-section" className="mt-6">
+            {isLoading ? (
+              <p className="text-zinc-400">Carregando...</p>
+            ) : (
+              <div className="space-y-3">
+                {tasks.length === 0 && (
+                  <div className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-900 p-8 text-center">
+                    <p className="text-zinc-300 font-medium">
+                      Nenhuma tarefa encontrada
+                    </p>
+                    <p className="mt-2 text-sm text-zinc-500">
+                      Ajuste os filtros ou crie uma nova tarefa.
+                    </p>
+                  </div>
+                )}
 
-              {tasks.map((t) => (
-                <div
-                  key={t.id}
-                  className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm transition hover:border-zinc-700 hover:bg-zinc-900/90"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="font-semibold">{t.title}</div>
+                {tasks.map((t) => (
+                  <div
+                    key={t.id}
+                    className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm transition hover:border-zinc-700 hover:bg-zinc-900/90"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="font-semibold">{t.title}</div>
 
-                      <div className="mt-2 flex items-center gap-2 flex-wrap">
-                        <span
-                          className={`inline-flex items-center gap-2 text-xs rounded-full px-3 py-1 ${getPriorityBadgeClass(
-                            t.priority
-                          )}`}
-                        >
-                          <Flag size={12} />
-                          {t.priority}
-                        </span>
-
-                        <span
-                          className={`inline-flex items-center gap-2 text-xs rounded-full px-3 py-1 ${getStatusBadgeClass(
-                            t.status
-                          )}`}
-                        >
-                          <CircleDashed size={12} />
-                          {t.status}
-                        </span>
-
-                        {t.due_date && (
-                          <span className="inline-flex items-center gap-2 text-xs rounded-full bg-zinc-800 px-3 py-1 border border-zinc-700 text-zinc-300">
-                            <CalendarDays size={12} />
-                            {t.due_date}
+                        <div className="mt-2 flex items-center gap-2 flex-wrap">
+                          <span
+                            className={`inline-flex items-center gap-2 text-xs rounded-full px-3 py-1 ${getPriorityBadgeClass(
+                              t.priority
+                            )}`}
+                          >
+                            <Flag size={12} />
+                            {t.priority}
                           </span>
+
+                          <span
+                            className={`inline-flex items-center gap-2 text-xs rounded-full px-3 py-1 ${getStatusBadgeClass(
+                              t.status
+                            )}`}
+                          >
+                            <CircleDashed size={12} />
+                            {t.status}
+                          </span>
+
+                          {t.due_date && (
+                            <span className="inline-flex items-center gap-2 text-xs rounded-full bg-zinc-800 px-3 py-1 border border-zinc-700 text-zinc-300">
+                              <CalendarDays size={12} />
+                              {t.due_date}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-wrap justify-end">
+                        <button
+                          className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition"
+                          onClick={() => openEdit(t)}
+                        >
+                          Editar
+                        </button>
+
+                        {t.status !== "concluida" ? (
+                          <button
+                            className="rounded-xl bg-white text-zinc-950 px-3 py-2 text-sm font-semibold disabled:opacity-60"
+                            disabled={statusMutation.isPending}
+                            onClick={() =>
+                              statusMutation.mutate({
+                                id: t.id,
+                                status: "concluida",
+                              })
+                            }
+                          >
+                            Concluir
+                          </button>
+                        ) : (
+                          <button
+                            className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition disabled:opacity-60"
+                            disabled={statusMutation.isPending}
+                            onClick={() =>
+                              statusMutation.mutate({
+                                id: t.id,
+                                status: "pendente",
+                              })
+                            }
+                          >
+                            Reabrir
+                          </button>
                         )}
+
+                        <button
+                          className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition disabled:opacity-60"
+                          disabled={deleteMutation.isPending}
+                          onClick={() => {
+                            const ok = confirm("Remover esta tarefa?");
+                            if (ok) deleteMutation.mutate(t.id);
+                          }}
+                        >
+                          Excluir
+                        </button>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap justify-end">
-                      <button
-                        className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition"
-                        onClick={() => openEdit(t)}
-                      >
-                        Editar
-                      </button>
-
-                      {t.status !== "concluida" ? (
-                        <button
-                          className="rounded-xl bg-white text-zinc-950 px-3 py-2 text-sm font-semibold disabled:opacity-60"
-                          disabled={statusMutation.isPending}
-                          onClick={() =>
-                            statusMutation.mutate({ id: t.id, status: "concluida" })
-                          }
-                        >
-                          Concluir
-                        </button>
-                      ) : (
-                        <button
-                          className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition disabled:opacity-60"
-                          disabled={statusMutation.isPending}
-                          onClick={() =>
-                            statusMutation.mutate({ id: t.id, status: "pendente" })
-                          }
-                        >
-                          Reabrir
-                        </button>
-                      )}
-
-                      <button
-                        className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition disabled:opacity-60"
-                        disabled={deleteMutation.isPending}
-                        onClick={() => {
-                          const ok = confirm("Remover esta tarefa?");
-                          if (ok) deleteMutation.mutate(t.id);
-                        }}
-                      >
-                        Excluir
-                      </button>
-                    </div>
+                    {t.description && (
+                      <p className="mt-3 text-sm leading-6 text-zinc-400">
+                        {t.description}
+                      </p>
+                    )}
                   </div>
+                ))}
+              </div>
+            )}
+          </section>
 
-                  {t.description && (
-                    <p className="mt-3 text-sm leading-6 text-zinc-400">
-                      {t.description}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+          <section
+            id="account-section"
+            className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
+          >
+            <h3 className="text-lg font-semibold">Conta</h3>
+            <p className="mt-2 text-sm text-zinc-400">
+              Área reservada para perfil, preferências e informações do usuário.
+            </p>
+          </section>
 
           {isEditOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
