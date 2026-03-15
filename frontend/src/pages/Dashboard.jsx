@@ -23,6 +23,8 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  const [activeSection, setActiveSection] = useState("dashboard");
+
   // filtros
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
@@ -199,6 +201,15 @@ export default function Dashboard() {
   const inProgressTasks = tasks.filter((t) => t.status === "em_andamento").length;
   const doneTasks = tasks.filter((t) => t.status === "concluida").length;
 
+  function getNavItemClass(section) {
+  const base =
+    "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm transition";
+
+  return activeSection === section
+    ? `${base} bg-zinc-800 text-zinc-100 font-medium`
+    : `${base} text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100`;
+  }
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="grid min-h-screen lg:grid-cols-[260px_1fr]">
@@ -213,7 +224,8 @@ export default function Dashboard() {
           <nav className="mt-10 space-y-2">
             <a
               href="#dashboard-top"
-              className="flex w-full items-center gap-3 rounded-xl bg-zinc-800 px-4 py-3 text-left text-sm font-medium"
+              className={getNavItemClass("dashboard")}
+              onClick={() => setActiveSection("dashboard")}
             >
               <LayoutDashboard size={18} />
               Dashboard
@@ -221,7 +233,8 @@ export default function Dashboard() {
 
             <a
               href="#tasks-section"
-              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100 transition"
+              className={getNavItemClass("tasks")}
+              onClick={() => setActiveSection("tasks")}
             >
               <CheckSquare size={18} />
               Tarefas
@@ -229,7 +242,8 @@ export default function Dashboard() {
 
             <a
               href="#filters-section"
-              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100 transition"
+              className={getNavItemClass("filters")}
+              onClick={() => setActiveSection("filters")}
             >
               <Filter size={18} />
               Filtros
@@ -237,7 +251,8 @@ export default function Dashboard() {
 
             <a
               href="#account-section"
-              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100 transition"
+              className={getNavItemClass("account")}
+              onClick={() => setActiveSection("account")}
             >
               <User size={18} />
               Conta
@@ -253,6 +268,20 @@ export default function Dashboard() {
         </aside>
 
         <main className="p-6 lg:p-8">
+          <div className="mb-6 flex items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-900 p-4 lg:hidden">
+            <div>
+              <h1 className="text-lg font-bold">TaskFlow</h1>
+              <p className="text-xs text-zinc-400">Seu painel de produtividade</p>
+            </div>
+
+            <button
+              className="inline-flex items-center gap-2 rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition"
+              onClick={handleLogout}
+            >
+              <LogOut size={16} />
+              Sair
+            </button>
+          </div>
           <section
             id="dashboard-top"
             className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
@@ -304,7 +333,7 @@ export default function Dashboard() {
             onSubmit={handleCreate}
             className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
           >
-            <div className="grid gap-3 md:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <input
                 className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
                 placeholder="Título da tarefa"
@@ -353,7 +382,7 @@ export default function Dashboard() {
             id="filters-section"
             className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
           >
-            <div className="grid gap-3 md:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <input
                 className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none md:col-span-2"
                 placeholder="Buscar por título ou descrição"
@@ -448,7 +477,7 @@ export default function Dashboard() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 flex-wrap justify-end">
+                      <div className="flex flex-wrap items-center gap-2 justify-start md:justify-end">
                         <button
                           className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition"
                           onClick={() => openEdit(t)}
