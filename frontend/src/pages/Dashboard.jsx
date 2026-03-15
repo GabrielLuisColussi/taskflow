@@ -1,5 +1,16 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  CheckSquare,
+  Filter,
+  User,
+  LogOut,
+  CalendarDays,
+  Flag,
+  CircleDashed,
+} from "lucide-react";
 import {
   createTask,
   deleteTask,
@@ -10,6 +21,7 @@ import {
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // filtros
   const [search, setSearch] = useState("");
@@ -22,7 +34,6 @@ export default function Dashboard() {
   const [priority, setPriority] = useState("media");
   const [dueDate, setDueDate] = useState("");
   const [msg, setMsg] = useState("");
-
 
   // editar
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -99,7 +110,7 @@ export default function Dashboard() {
 
   function handleLogout() {
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    navigate("/login");
   }
 
   function handleCreate(e) {
@@ -188,306 +199,360 @@ export default function Dashboard() {
   const inProgressTasks = tasks.filter((t) => t.status === "em_andamento").length;
   const doneTasks = tasks.filter((t) => t.status === "concluida").length;
 
-
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">TaskFlow</h1>
-          <p className="mt-1 text-sm text-zinc-400">
-            Organize, acompanhe e conclua suas tarefas.
-          </p>
-        </div>
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <div className="grid min-h-screen lg:grid-cols-[260px_1fr]">
+        <aside className="hidden lg:flex flex-col border-r border-zinc-800 bg-zinc-900/80 p-6">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">TaskFlow</h1>
+            <p className="mt-1 text-sm text-zinc-400">
+              Seu painel de produtividade
+            </p>
+          </div>
 
-        <button
-          className="rounded-xl bg-zinc-800 px-4 py-2 text-sm font-medium hover:bg-zinc-700 transition"
-          onClick={handleLogout}
-        >
-          Sair
-        </button>
-    </div>
+          <nav className="mt-10 space-y-2">
+            <button className="flex w-full items-center gap-3 rounded-xl bg-zinc-800 px-4 py-3 text-left text-sm font-medium">
+              <LayoutDashboard size={18} />
+              Dashboard
+            </button>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm">
-          <p className="text-sm text-zinc-400">Total</p>
-          <h2 className="mt-2 text-2xl font-bold">{totalTasks}</h2>
-        </div>
+            <button className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100 transition">
+              <CheckSquare size={18} />
+              Tarefas
+            </button>
 
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm">
-          <p className="text-sm text-zinc-400">Pendentes</p>
-          <h2 className="mt-2 text-2xl font-bold">{pendingTasks}</h2>
-        </div>
+            <button className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100 transition">
+              <Filter size={18} />
+              Filtros
+            </button>
 
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm">
-          <p className="text-sm text-zinc-400">Em andamento</p>
-          <h2 className="mt-2 text-2xl font-bold">{inProgressTasks}</h2>
-        </div>
+            <button className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-100 transition">
+              <User size={18} />
+              Conta
+            </button>
+          </nav>
 
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm">
-          <p className="text-sm text-zinc-400">Concluídas</p>
-          <h2 className="mt-2 text-2xl font-bold">{doneTasks}</h2>
-        </div>
-      </div>
+          <div className="mt-auto rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950 p-4">
+            <p className="text-sm font-medium">Projeto pessoal</p>
+            <p className="mt-1 text-xs text-zinc-400">
+              React + PHP + MySQL + Tailwind
+            </p>
+          </div>
+        </aside>
 
-      {/* form criar */}
-      <form
-        onSubmit={handleCreate}
-        className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
-      >
-        <div className="grid gap-3 md:grid-cols-4">
-          <input
-            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
-            placeholder="Título da tarefa"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-
-          <select
-            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-          >
-            <option value="baixa">Baixa</option>
-            <option value="media">Média</option>
-            <option value="alta">Alta</option>
-          </select>
-
-          <input
-            type="date"
-            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-          />
-
-          <button
-            type="submit"
-            className="w-full rounded-xl bg-white text-zinc-950 p-3 font-semibold disabled:opacity-60"
-            disabled={createMutation.isPending}
-          >
-            {createMutation.isPending ? "Criando..." : "Criar tarefa"}
-          </button>
-        </div>
-
-        <textarea
-          className="mt-3 w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
-          placeholder="Descrição (opcional)"
-          rows={3}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-
-        {msg && <p className="mt-3 text-sm text-zinc-300">{msg}</p>}
-      </form>
-
-      {/* filtros */}
-      <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
-        <div className="grid gap-3 md:grid-cols-4">
-          <input
-            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none md:col-span-2"
-            placeholder="Buscar por título ou descrição"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-
-          <select
-            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="">Todos os status</option>
-            <option value="pendente">Pendente</option>
-            <option value="em_andamento">Em andamento</option>
-            <option value="concluida">Concluída</option>
-          </select>
-
-          <select
-            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
-            value={filterPriority}
-            onChange={(e) => setFilterPriority(e.target.value)}
-          >
-            <option value="">Todas as prioridades</option>
-            <option value="baixa">Baixa</option>
-            <option value="media">Média</option>
-            <option value="alta">Alta</option>
-          </select>
-        </div>
-
-        <div className="mt-3 flex justify-end">
-          <button
-            type="button"
-            className="rounded-xl bg-zinc-800 px-4 py-2 text-sm"
-            onClick={clearFilters}
-          >
-            Limpar filtros
-          </button>
-        </div>
-      </div>
-
-      {/* lista */}
-      {isLoading ? (
-        <p className="mt-6 text-zinc-400">Carregando...</p>
-      ) : (
-        <div className="mt-6 space-y-3">
-          {tasks.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-900 p-8 text-center">
-              <p className="text-zinc-300 font-medium">Nenhuma tarefa encontrada</p>
-              <p className="mt-2 text-sm text-zinc-500">
-                Ajuste os filtros ou crie uma nova tarefa.
+        <main className="p-6 lg:p-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.2em] text-zinc-500">
+                Dashboard
+              </p>
+              <h2 className="mt-2 text-3xl font-bold tracking-tight">
+                Minhas tarefas
+              </h2>
+              <p className="mt-2 text-sm text-zinc-400">
+                Organize, acompanhe e conclua suas atividades com clareza.
               </p>
             </div>
-          )}
 
-          {tasks.map((t) => (
-            <div
-              key={t.id}
-              className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm transition hover:border-zinc-700 hover:bg-zinc-900/90"
+            <button
+              className="inline-flex items-center gap-2 rounded-xl bg-zinc-800 px-4 py-2 text-sm font-medium hover:bg-zinc-700 transition"
+              onClick={handleLogout}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-semibold">{t.title}</div>
+              <LogOut size={16} />
+              Sair
+            </button>
+          </div>
 
-                  <div className="mt-2 flex items-center gap-2 flex-wrap">
-                    <span className={`text-xs rounded-full px-3 py-1 ${getPriorityBadgeClass(t.priority)}`}
-                    >
-                      prioridade: {t.priority}
-                    </span>
-
-                    <span
-                      className={`text-xs rounded-full px-3 py-1 ${getStatusBadgeClass(t.status)}`}
-                    >
-                      status: {t.status}
-                    </span>
-
-                    {t.due_date && (
-                      <span className="text-xs rounded-full bg-zinc-800 px-3 py-1 border border-zinc-700 text-zinc-300">
-                        vencimento: {t.due_date}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 flex-wrap justify-end">
-                  <button
-                    className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition"
-                    onClick={() => openEdit(t)}
-                  >
-                    Editar
-                  </button>
-
-                  {t.status !== "concluida" ? (
-                    <button
-                      className="rounded-xl bg-white text-zinc-950 px-3 py-2 text-sm font-semibold disabled:opacity-60"
-                      disabled={statusMutation.isPending}
-                      onClick={() =>
-                        statusMutation.mutate({ id: t.id, status: "concluida" })
-                      }
-                    >
-                      Concluir
-                    </button>
-                  ) : (
-                    <button
-                      className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition disabled:opacity-60"
-                      disabled={statusMutation.isPending}
-                      onClick={() =>
-                        statusMutation.mutate({ id: t.id, status: "pendente" })
-                      }
-                    >
-                      Reabrir
-                    </button>
-                  )}
-
-                  <button
-                    className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition disabled:opacity-60"
-                    disabled={deleteMutation.isPending}
-                    onClick={() => {
-                      const ok = confirm("Remover esta tarefa?");
-                      if (ok) deleteMutation.mutate(t.id);
-                    }}
-                  >
-                    Excluir
-                  </button>
-                </div>
-              </div>
-
-              {t.description && (
-                <p className="mt-3 text-sm leading-6 text-zinc-400">
-                  {t.description}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* modal editar */}
-      {isEditOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-          <div className="absolute inset-0 bg-black/60" onClick={closeEdit} />
-
-          <div className="relative w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Editar tarefa</h2>
-              <button className="rounded-xl bg-zinc-800 px-3 py-2 text-sm" onClick={closeEdit}>
-                Fechar
-              </button>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950 p-5 shadow-sm">
+              <p className="text-sm text-zinc-400">Total</p>
+              <h2 className="mt-3 text-3xl font-bold">{totalTasks}</h2>
             </div>
 
-            <form onSubmit={handleUpdate} className="mt-4 space-y-3">
+            <div className="rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950 p-5 shadow-sm">
+              <p className="text-sm text-zinc-400">Pendentes</p>
+              <h2 className="mt-3 text-3xl font-bold">{pendingTasks}</h2>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950 p-5 shadow-sm">
+              <p className="text-sm text-zinc-400">Em andamento</p>
+              <h2 className="mt-3 text-3xl font-bold">{inProgressTasks}</h2>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950 p-5 shadow-sm">
+              <p className="text-sm text-zinc-400">Concluídas</p>
+              <h2 className="mt-3 text-3xl font-bold">{doneTasks}</h2>
+            </div>
+          </div>
+
+          <form
+            onSubmit={handleCreate}
+            className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
+          >
+            <div className="grid gap-3 md:grid-cols-4">
               <input
                 className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                placeholder="Título"
+                placeholder="Título da tarefa"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
               />
 
-              <textarea
+              <select
                 className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
-                rows={4}
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                placeholder="Descrição"
-              />
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+              >
+                <option value="baixa">Baixa</option>
+                <option value="media">Média</option>
+                <option value="alta">Alta</option>
+              </select>
 
-              <div className="grid gap-3 md:grid-cols-3">
-                <select
-                  className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
-                  value={editPriority}
-                  onChange={(e) => setEditPriority(e.target.value)}
-                >
-                  <option value="baixa">Baixa</option>
-                  <option value="media">Média</option>
-                  <option value="alta">Alta</option>
-                </select>
-
-                <select
-                  className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
-                  value={editStatus}
-                  onChange={(e) => setEditStatus(e.target.value)}
-                >
-                  <option value="pendente">Pendente</option>
-                  <option value="em_andamento">Em andamento</option>
-                  <option value="concluida">Concluída</option>
-                </select>
-
-                <input
+              <input
                 type="date"
                 className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
-                value={editDueDate}
-                onChange={(e) => setEditDueDate(e.target.value)}
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
               />
-              </div>
 
               <button
                 type="submit"
                 className="w-full rounded-xl bg-white text-zinc-950 p-3 font-semibold disabled:opacity-60"
-                disabled={updateMutation.isPending}
+                disabled={createMutation.isPending}
               >
-                {updateMutation.isPending ? "Salvando..." : "Salvar alterações"}
+                {createMutation.isPending ? "Criando..." : "Criar tarefa"}
               </button>
-            </form>
+            </div>
+
+            <textarea
+              className="mt-3 w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
+              placeholder="Descrição (opcional)"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+
+            {msg && <p className="mt-3 text-sm text-zinc-300">{msg}</p>}
+          </form>
+
+          <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+            <div className="grid gap-3 md:grid-cols-4">
+              <input
+                className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none md:col-span-2"
+                placeholder="Buscar por título ou descrição"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+
+              <select
+                className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <option value="">Todos os status</option>
+                <option value="pendente">Pendente</option>
+                <option value="em_andamento">Em andamento</option>
+                <option value="concluida">Concluída</option>
+              </select>
+
+              <select
+                className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
+                value={filterPriority}
+                onChange={(e) => setFilterPriority(e.target.value)}
+              >
+                <option value="">Todas as prioridades</option>
+                <option value="baixa">Baixa</option>
+                <option value="media">Média</option>
+                <option value="alta">Alta</option>
+              </select>
+            </div>
+
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                className="rounded-xl bg-zinc-800 px-4 py-2 text-sm font-medium hover:bg-zinc-700 transition"
+                onClick={clearFilters}
+              >
+                Limpar filtros
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+
+          {isLoading ? (
+            <p className="mt-6 text-zinc-400">Carregando...</p>
+          ) : (
+            <div className="mt-6 space-y-3">
+              {tasks.length === 0 && (
+                <div className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-900 p-8 text-center">
+                  <p className="text-zinc-300 font-medium">Nenhuma tarefa encontrada</p>
+                  <p className="mt-2 text-sm text-zinc-500">
+                    Ajuste os filtros ou crie uma nova tarefa.
+                  </p>
+                </div>
+              )}
+
+              {tasks.map((t) => (
+                <div
+                  key={t.id}
+                  className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm transition hover:border-zinc-700 hover:bg-zinc-900/90"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="font-semibold">{t.title}</div>
+
+                      <div className="mt-2 flex items-center gap-2 flex-wrap">
+                        <span
+                          className={`inline-flex items-center gap-2 text-xs rounded-full px-3 py-1 ${getPriorityBadgeClass(
+                            t.priority
+                          )}`}
+                        >
+                          <Flag size={12} />
+                          {t.priority}
+                        </span>
+
+                        <span
+                          className={`inline-flex items-center gap-2 text-xs rounded-full px-3 py-1 ${getStatusBadgeClass(
+                            t.status
+                          )}`}
+                        >
+                          <CircleDashed size={12} />
+                          {t.status}
+                        </span>
+
+                        {t.due_date && (
+                          <span className="inline-flex items-center gap-2 text-xs rounded-full bg-zinc-800 px-3 py-1 border border-zinc-700 text-zinc-300">
+                            <CalendarDays size={12} />
+                            {t.due_date}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap justify-end">
+                      <button
+                        className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition"
+                        onClick={() => openEdit(t)}
+                      >
+                        Editar
+                      </button>
+
+                      {t.status !== "concluida" ? (
+                        <button
+                          className="rounded-xl bg-white text-zinc-950 px-3 py-2 text-sm font-semibold disabled:opacity-60"
+                          disabled={statusMutation.isPending}
+                          onClick={() =>
+                            statusMutation.mutate({ id: t.id, status: "concluida" })
+                          }
+                        >
+                          Concluir
+                        </button>
+                      ) : (
+                        <button
+                          className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition disabled:opacity-60"
+                          disabled={statusMutation.isPending}
+                          onClick={() =>
+                            statusMutation.mutate({ id: t.id, status: "pendente" })
+                          }
+                        >
+                          Reabrir
+                        </button>
+                      )}
+
+                      <button
+                        className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition disabled:opacity-60"
+                        disabled={deleteMutation.isPending}
+                        onClick={() => {
+                          const ok = confirm("Remover esta tarefa?");
+                          if (ok) deleteMutation.mutate(t.id);
+                        }}
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  </div>
+
+                  {t.description && (
+                    <p className="mt-3 text-sm leading-6 text-zinc-400">
+                      {t.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {isEditOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+              <div className="absolute inset-0 bg-black/60" onClick={closeEdit} />
+
+              <div className="relative w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">Editar tarefa</h2>
+                  <button
+                    className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition"
+                    onClick={closeEdit}
+                  >
+                    Fechar
+                  </button>
+                </div>
+
+                <form onSubmit={handleUpdate} className="mt-4 space-y-3">
+                  <input
+                    className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="Título"
+                  />
+
+                  <textarea
+                    className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
+                    rows={4}
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    placeholder="Descrição"
+                  />
+
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <select
+                      className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
+                      value={editPriority}
+                      onChange={(e) => setEditPriority(e.target.value)}
+                    >
+                      <option value="baixa">Baixa</option>
+                      <option value="media">Média</option>
+                      <option value="alta">Alta</option>
+                    </select>
+
+                    <select
+                      className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
+                      value={editStatus}
+                      onChange={(e) => setEditStatus(e.target.value)}
+                    >
+                      <option value="pendente">Pendente</option>
+                      <option value="em_andamento">Em andamento</option>
+                      <option value="concluida">Concluída</option>
+                    </select>
+
+                    <input
+                      type="date"
+                      className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
+                      value={editDueDate}
+                      onChange={(e) => setEditDueDate(e.target.value)}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full rounded-xl bg-white text-zinc-950 p-3 font-semibold disabled:opacity-60"
+                    disabled={updateMutation.isPending}
+                  >
+                    {updateMutation.isPending ? "Salvando..." : "Salvar alterações"}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
