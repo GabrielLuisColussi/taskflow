@@ -4,32 +4,46 @@ import {
   createTask,
   deleteTask,
   listTasks,
-  updateTaskStatus,
   updateTask,
+  updateTaskStatus,
 } from "../api/tasks";
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["tasks"],
-    queryFn: () => listTasks(),
-  });
+  // filtros
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterPriority, setFilterPriority] = useState("");
 
-  const tasks = useMemo(() => data?.data ?? [], [data]);
-
+  // criar
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("media");
+  const [dueDate, setDueDate] = useState("");
   const [msg, setMsg] = useState("");
 
-  // Modal edição
+
+  // editar
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editPriority, setEditPriority] = useState("media");
   const [editStatus, setEditStatus] = useState("pendente");
+  const [editDueDate, setEditDueDate] = useState("");
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["tasks", search, filterStatus, filterPriority],
+    queryFn: () =>
+      listTasks({
+        search: search || undefined,
+        status: filterStatus || undefined,
+        priority: filterPriority || undefined,
+      }),
+  });
+
+  const tasks = useMemo(() => data?.data ?? [], [data]);
 
   const createMutation = useMutation({
     mutationFn: (payload) => createTask(payload),
@@ -43,6 +57,7 @@ export default function Dashboard() {
       setTitle("");
       setDescription("");
       setPriority("media");
+      setDueDate("");
 
       await queryClient.invalidateQueries({ queryKey: ["tasks"] });
       setTimeout(() => setMsg(""), 1500);
@@ -100,6 +115,7 @@ export default function Dashboard() {
       title: title.trim(),
       description: description.trim() || undefined,
       priority,
+      due_date: dueDate || null,
     });
   }
 
@@ -109,6 +125,7 @@ export default function Dashboard() {
     setEditDescription(t.description || "");
     setEditPriority(t.priority || "media");
     setEditStatus(t.status || "pendente");
+    setEditDueDate(t.due_date || "");
     setIsEditOpen(true);
   }
 
@@ -133,34 +150,100 @@ export default function Dashboard() {
         description: editDescription.trim() || null,
         priority: editPriority,
         status: editStatus,
+        due_date: editDueDate || null,
       },
     });
   }
 
+  function clearFilters() {
+    setSearch("");
+    setFilterStatus("");
+    setFilterPriority("");
+  }
+
+  function getStatusBadgeClass(status) {
+    switch (status) {
+      case "concluida":
+        return "bg-emerald-500/15 text-emerald-300 border border-emerald-500/20";
+      case "em_andamento":
+        return "bg-sky-500/15 text-sky-300 border border-sky-500/20";
+      default:
+        return "bg-zinc-800 text-zinc-300 border border-zinc-700";
+    }
+  }
+
+  function getPriorityBadgeClass(priority) {
+    switch (priority) {
+      case "alta":
+        return "bg-rose-500/15 text-rose-300 border border-rose-500/20";
+      case "media":
+        return "bg-amber-500/15 text-amber-300 border border-amber-500/20";
+      default:
+        return "bg-teal-500/15 text-teal-300 border border-teal-500/20";
+    }
+  }
+
+  const totalTasks = tasks.length;
+  const pendingTasks = tasks.filter((t) => t.status === "pendente").length;
+  const inProgressTasks = tasks.filter((t) => t.status === "em_andamento").length;
+  const doneTasks = tasks.filter((t) => t.status === "concluida").length;
+
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Minhas tarefas</h1>
-        <button className="rounded-xl bg-zinc-800 px-4 py-2" onClick={handleLogout}>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">TaskFlow</h1>
+          <p className="mt-1 text-sm text-zinc-400">
+            Organize, acompanhe e conclua suas tarefas.
+          </p>
+        </div>
+
+        <button
+          className="rounded-xl bg-zinc-800 px-4 py-2 text-sm font-medium hover:bg-zinc-700 transition"
+          onClick={handleLogout}
+        >
           Sair
         </button>
+    </div>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm">
+          <p className="text-sm text-zinc-400">Total</p>
+          <h2 className="mt-2 text-2xl font-bold">{totalTasks}</h2>
+        </div>
+
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm">
+          <p className="text-sm text-zinc-400">Pendentes</p>
+          <h2 className="mt-2 text-2xl font-bold">{pendingTasks}</h2>
+        </div>
+
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm">
+          <p className="text-sm text-zinc-400">Em andamento</p>
+          <h2 className="mt-2 text-2xl font-bold">{inProgressTasks}</h2>
+        </div>
+
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm">
+          <p className="text-sm text-zinc-400">Concluídas</p>
+          <h2 className="mt-2 text-2xl font-bold">{doneTasks}</h2>
+        </div>
       </div>
 
-      {/* Form criar tarefa */}
+      {/* form criar */}
       <form
         onSubmit={handleCreate}
         className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-4"
       >
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-4">
           <input
-            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none md:col-span-1"
+            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
             placeholder="Título da tarefa"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
 
           <select
-            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none md:col-span-1"
+            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
           >
@@ -169,9 +252,16 @@ export default function Dashboard() {
             <option value="alta">Alta</option>
           </select>
 
+          <input
+            type="date"
+            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+          />
+
           <button
             type="submit"
-            className="w-full rounded-xl bg-white text-zinc-950 p-3 font-semibold md:col-span-1 disabled:opacity-60"
+            className="w-full rounded-xl bg-white text-zinc-950 p-3 font-semibold disabled:opacity-60"
             disabled={createMutation.isPending}
           >
             {createMutation.isPending ? "Criando..." : "Criar tarefa"}
@@ -189,34 +279,96 @@ export default function Dashboard() {
         {msg && <p className="mt-3 text-sm text-zinc-300">{msg}</p>}
       </form>
 
-      {/* Lista */}
+      {/* filtros */}
+      <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+        <div className="grid gap-3 md:grid-cols-4">
+          <input
+            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none md:col-span-2"
+            placeholder="Buscar por título ou descrição"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          <select
+            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="">Todos os status</option>
+            <option value="pendente">Pendente</option>
+            <option value="em_andamento">Em andamento</option>
+            <option value="concluida">Concluída</option>
+          </select>
+
+          <select
+            className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
+            value={filterPriority}
+            onChange={(e) => setFilterPriority(e.target.value)}
+          >
+            <option value="">Todas as prioridades</option>
+            <option value="baixa">Baixa</option>
+            <option value="media">Média</option>
+            <option value="alta">Alta</option>
+          </select>
+        </div>
+
+        <div className="mt-3 flex justify-end">
+          <button
+            type="button"
+            className="rounded-xl bg-zinc-800 px-4 py-2 text-sm"
+            onClick={clearFilters}
+          >
+            Limpar filtros
+          </button>
+        </div>
+      </div>
+
+      {/* lista */}
       {isLoading ? (
         <p className="mt-6 text-zinc-400">Carregando...</p>
       ) : (
         <div className="mt-6 space-y-3">
           {tasks.length === 0 && (
-            <p className="text-zinc-400">Nenhuma tarefa ainda. Crie a primeira!</p>
+            <div className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-900 p-8 text-center">
+              <p className="text-zinc-300 font-medium">Nenhuma tarefa encontrada</p>
+              <p className="mt-2 text-sm text-zinc-500">
+                Ajuste os filtros ou crie uma nova tarefa.
+              </p>
+            </div>
           )}
 
           {tasks.map((t) => (
-            <div key={t.id} className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+            <div
+              key={t.id}
+              className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm transition hover:border-zinc-700 hover:bg-zinc-900/90"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="font-semibold">{t.title}</div>
 
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="text-xs rounded-full bg-zinc-800 px-3 py-1">
-                      {t.priority}
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
+                    <span className={`text-xs rounded-full px-3 py-1 ${getPriorityBadgeClass(t.priority)}`}
+                    >
+                      prioridade: {t.priority}
                     </span>
-                    <span className="text-xs rounded-full bg-zinc-800 px-3 py-1">
-                      {t.status}
+
+                    <span
+                      className={`text-xs rounded-full px-3 py-1 ${getStatusBadgeClass(t.status)}`}
+                    >
+                      status: {t.status}
                     </span>
+
+                    {t.due_date && (
+                      <span className="text-xs rounded-full bg-zinc-800 px-3 py-1 border border-zinc-700 text-zinc-300">
+                        vencimento: {t.due_date}
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap justify-end">
                   <button
-                    className="rounded-xl bg-zinc-800 px-3 py-2 text-sm disabled:opacity-60"
+                    className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition"
                     onClick={() => openEdit(t)}
                   >
                     Editar
@@ -234,7 +386,7 @@ export default function Dashboard() {
                     </button>
                   ) : (
                     <button
-                      className="rounded-xl bg-zinc-800 px-3 py-2 text-sm disabled:opacity-60"
+                      className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition disabled:opacity-60"
                       disabled={statusMutation.isPending}
                       onClick={() =>
                         statusMutation.mutate({ id: t.id, status: "pendente" })
@@ -245,7 +397,7 @@ export default function Dashboard() {
                   )}
 
                   <button
-                    className="rounded-xl bg-zinc-800 px-3 py-2 text-sm disabled:opacity-60"
+                    className="rounded-xl bg-zinc-800 px-3 py-2 text-sm font-medium hover:bg-zinc-700 transition disabled:opacity-60"
                     disabled={deleteMutation.isPending}
                     onClick={() => {
                       const ok = confirm("Remover esta tarefa?");
@@ -257,19 +409,20 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {t.description && <p className="text-zinc-400 mt-2">{t.description}</p>}
+              {t.description && (
+                <p className="mt-3 text-sm leading-6 text-zinc-400">
+                  {t.description}
+                </p>
+              )}
             </div>
           ))}
         </div>
       )}
 
-      {/* Modal editar */}
+      {/* modal editar */}
       {isEditOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-          <div
-            className="absolute inset-0 bg-black/60"
-            onClick={closeEdit}
-          />
+          <div className="absolute inset-0 bg-black/60" onClick={closeEdit} />
 
           <div className="relative w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
             <div className="flex items-center justify-between">
@@ -295,7 +448,7 @@ export default function Dashboard() {
                 placeholder="Descrição"
               />
 
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-3 md:grid-cols-3">
                 <select
                   className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
                   value={editPriority}
@@ -315,6 +468,13 @@ export default function Dashboard() {
                   <option value="em_andamento">Em andamento</option>
                   <option value="concluida">Concluída</option>
                 </select>
+
+                <input
+                type="date"
+                className="w-full rounded-xl bg-zinc-950 border border-zinc-800 p-3 outline-none"
+                value={editDueDate}
+                onChange={(e) => setEditDueDate(e.target.value)}
+              />
               </div>
 
               <button
